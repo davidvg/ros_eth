@@ -12,6 +12,7 @@
        #'https://github.com/ros-perception/imu_pipeline.git' \
        #'https://github.com/ros-drivers/microstrain_3dmgx2_imu.git' \
        #'https://github.com/paulbovbel/frontier_exploration.git' \
+       #'https://github.com/ros-teleop/teleop_twist_keyboard',
         #)
 repos=( \
     'https://github.com/husky/husky.git' \

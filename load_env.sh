@@ -2,6 +2,8 @@
 
 # Setup file
 SETUP_FILE=./devel/setup.zsh
+source $SETUP_FILE 
+echo "$SETUP_FILE loaded."
 
 # Turtlebot3 model
 export TURTLEBOT3_MODEL=burger
@@ -15,5 +17,3 @@ echo "Exported: HUSKY_GAZEBO_DESCRIPTION=$HUSKY_GAZEBO_DESCRIPTION"
 export QT_AUTO_SCREEN_SCALE_FACTOR=
 export QT_SCREEN_SCALE_FACTORS=
 
-source $SETUP_FILE 
-echo "$SETUP_FILE loaded."
