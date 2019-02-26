@@ -18,6 +18,7 @@ repos=( \
     'https://github.com/husky/husky.git' \
     'https://github.com/davidvg/LMS1xx.git' \
     'https://github.com/ros-visualization/interactive_marker_twist_server.git' \
+    'https://github.com/ros-teleop/teleop_twist_joy.git' \
     )
 
 ROSDEP_INSTALL=false
