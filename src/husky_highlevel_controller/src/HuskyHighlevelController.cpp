@@ -23,7 +23,7 @@ void HuskyHighlevelController::laserscan_callback(const sensor_msgs::LaserScan::
 {
     ROS_INFO("Callback entered: laserscan_callback");
     int num_elem = sizeof(msg);
-    float min_val = 9999.99;
+    float min_val = msg->range_max;
 
     // Search for the minimum value in the array
     for (int i=0; i<num_elem; i++)
