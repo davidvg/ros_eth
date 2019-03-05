@@ -16,4 +16,3 @@ echo "Exported: HUSKY_GAZEBO_DESCRIPTION=$HUSKY_GAZEBO_DESCRIPTION"
 #  Environment variables for correct visualization
 export QT_AUTO_SCREEN_SCALE_FACTOR=
 export QT_SCREEN_SCALE_FACTORS=
-
