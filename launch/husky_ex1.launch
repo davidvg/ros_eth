@@ -6,13 +6,13 @@
     <arg name="world_name" default="worlds/empty.world"/>
 
     <!-- Launch Gazebo world  -->
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <include file="$(find husky_gazebo)/launch/husky_empty_world.launch">
         <arg name="world_name" value="$(arg world_name)"/>
     </include>
 
     <!-- Spawn robot -->
-    <include file="$(find husky_gazebo)/launch/spawn_husky.launch">
-    </include>
+    <!--include file="$(find husky_gazebo)/launch/spawn_husky.launch"-->
+    <!--/include-->
 
     <!-- Keyboard teleoperation node  -->
     <!--node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="keyboard"/ -->
