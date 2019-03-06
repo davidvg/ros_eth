@@ -14,10 +14,10 @@
     </include>
 
     <!-- Keyboard teleoperation node  -->
-    <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="keyboard"/>
+    <!-- node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="keyboard"/-->
     <!-- Joystick teleoperation node -->
-    <!-- node pkg="joy" type="joy_node" name="joy"/ -->
-    <!-- node pkg="teleop_twist_joy" type="teleop_node" name="joystick"/ -->
+    <node pkg="joy" type="joy_node" name="joy"/>
+    <node pkg="teleop_twist_joy" type="teleop_node" name="joystick"/>
 
     <!-- Launch husky_highlevel_controller node -->
     <node pkg="husky_highlevel_controller" type="husky_highlevel_controller" name="husky_controller" output="screen">
