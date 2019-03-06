@@ -21,7 +21,7 @@ HuskyHighlevelController::~HuskyHighlevelController()
 // Callback
 void HuskyHighlevelController::laserscan_callback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-    ROS_INFO("Callback entered: laserscan_callback");
+    //ROS_INFO("Callback entered: laserscan_callback");
     int num_elem = sizeof(msg);
     float min_val = msg->range_max;
 
