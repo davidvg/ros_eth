@@ -9,15 +9,38 @@ namespace husky_highlevel_controller {
 class HuskyHighlevelController 
 {
     public:
-    // Constructor
+        HuskyHighlevelController();
+        virtual ~HuskyHighlevelController();
+        
+        double min_measure; 
+        //bool init();
+
+    private:
+        // NodeHandles
+        ros::NodeHandle nodeHandle_;
+
+        // Variables
+
+        // Subscribers
+        ros::Subscriber laserscan_sub;
+        
+        // Publishers
+       
+        // Function Prototypes
+        //void getParameter(std::string, std::string);
+        void LaserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
+
+
+    /*
+    public:
     HuskyHighlevelController(ros::NodeHandle& nodeHandle);
-    // Destructor
     virtual ~HuskyHighlevelController();
 
     static void laserscan_callback(const sensor_msgs::LaserScan::ConstPtr&);
 
     private:
     ros::NodeHandle nodeHandle_;
+    */
 };
 
 

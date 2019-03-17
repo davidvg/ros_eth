@@ -4,6 +4,16 @@
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "husky_highlevel_controller");
+    //ros::NodeHandle nodeHandle("~");
+
+    husky_highlevel_controller::HuskyHighlevelController controller;
+    
+    //ROS_INFO("NODE: measurement = %f", controller.min_measure);
+
+
+    ros::spin();
+    /*
+    ros::init(argc, argv, "husky_highlevel_controller");
     ros::NodeHandle nodeHandle("~");
 
     //ROS_INFO("Node launched: husky_highlevel_controller");
@@ -36,5 +46,7 @@ int main(int argc, char** argv)
     //ROS_INFO("Subscriber created");
 
     ros::spin();
+    */
+
     return 0;
 }

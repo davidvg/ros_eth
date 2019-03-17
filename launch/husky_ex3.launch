@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- Define world to load -->
+    <arg name="world_name" default="$(find husky_highlevel_controller)worlds/singlePillar.world"/>
+    <!-- Laser enable -->
+    <arg name="laser_enabled" default="true"/>
+
+    <!-- Launch Gazebo world  -->
+    <include file="$(find husky_gazebo)/launch/husky_empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="laser_enabled" value="$(arg laser_enabled)"/>
+    </include>
+
+    <!-- Launch husky_highlevel_controller node -->
+    <node pkg="husky_highlevel_controller" type="husky_highlevel_controller" name="husky_controller" output="screen">
+        <rosparam command="load" file="$(find husky_highlevel_controller)/config/config.yml"/>
+    </node>
+
+    <!-- Launch rviz -->
+    <node pkg="rviz" type="rviz" name="rviz"/>
+
+</launch>
