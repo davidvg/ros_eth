@@ -12,14 +12,15 @@ class HuskyHighlevelController
         HuskyHighlevelController();
         virtual ~HuskyHighlevelController();
         
-        double min_measure; 
-        //bool init();
+        bool init(void);
 
     private:
         // NodeHandles
         ros::NodeHandle nodeHandle_;
 
         // Variables
+        double min_distance; 
+        int min_distance_ix;
 
         // Subscribers
         ros::Subscriber laserscan_sub;
@@ -28,19 +29,9 @@ class HuskyHighlevelController
        
         // Function Prototypes
         //void getParameter(std::string, std::string);
+        //void getParameter(std::string, int);
         void LaserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
 
-
-    /*
-    public:
-    HuskyHighlevelController(ros::NodeHandle& nodeHandle);
-    virtual ~HuskyHighlevelController();
-
-    static void laserscan_callback(const sensor_msgs::LaserScan::ConstPtr&);
-
-    private:
-    ros::NodeHandle nodeHandle_;
-    */
 };
 
 
