@@ -6,6 +6,8 @@ add_definitions(--std=c++11)
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     sensor_msgs
+    geometry_msgs
+    geometry_msgs
 )
 
 catkin_package(

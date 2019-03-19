@@ -3,6 +3,9 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 
+#define MAX_VELOCITY 0.3
+#define MAX_ANGULAR 0.5
+
 namespace husky_highlevel_controller {
 
 // Class containing the HuskyHighlevelController
@@ -12,7 +15,9 @@ class HuskyHighlevelController
         HuskyHighlevelController();
         virtual ~HuskyHighlevelController();
         
+        // Function Prototypes
         bool init(void);
+        void controlLoop();
 
     private:
         // NodeHandles
@@ -26,11 +31,13 @@ class HuskyHighlevelController
         ros::Subscriber laserscan_sub;
         
         // Publishers
+        ros::Publisher cmd_vel_pub;
        
         // Function Prototypes
         //void getParameter(std::string, std::string);
         //void getParameter(std::string, int);
-        void LaserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
+        void laserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
+        void updateCommandVelocity(double, double);
 
 };
 

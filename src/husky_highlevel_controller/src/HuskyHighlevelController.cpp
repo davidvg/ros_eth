@@ -1,7 +1,6 @@
 #include "husky_highlevel_controller/HuskyHighlevelController.hpp"
-//#include <std_msgs/String.h>
-//#include <std_msgs/Int16.h>
 #include <sensor_msgs/LaserScan.h>
+#include <geometry_msgs/Twist.h>
 
 
 namespace husky_highlevel_controller {
@@ -21,7 +20,7 @@ HuskyHighlevelController::~HuskyHighlevelController()
     ros::shutdown();
 }
 
-void HuskyHighlevelController::LaserscanCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
+void HuskyHighlevelController::laserscanCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
     int num_elem = msg->ranges.size();
     double min_distance = msg->range_max;
@@ -63,30 +62,54 @@ bool HuskyHighlevelController::init(void)
         ROS_ERROR("Could not get parameter: queue_size" );
     }
     
-    // Subscribe to topic
-    laserscan_sub = nodeHandle_.subscribe(topic, queue_size, &HuskyHighlevelController::LaserscanCallback, this);
+    // Initialize subscriber
+    laserscan_sub = nodeHandle_.subscribe(topic, queue_size, &HuskyHighlevelController::laserscanCallback, this);
+
+    // Initialize publisher
+    cmd_vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
 
     return true;
 }
 
+void HuskyHighlevelController::updateCommandVelocity(double linear, double angular)
+{
+    geometry_msgs::Twist cmd_vel;
+
+    cmd_vel.linear.x = linear;
+    cmd_vel.angular.z = angular;
+
+    cmd_vel_pub.publish(cmd_vel);
+}
+
+void HuskyHighlevelController::controlLoop(void)
+{
+    updateCommandVelocity(MAX_VELOCITY, MAX_ANGULAR);
+}
+
+/*  getParameter Functions cause the code to interfere with subscriptions and
+ *  not outputing responses.
+ */  
 // Function getParameter: string
 /*
 void HuskyHighlevelController::getParameter(std::string parameter, std::string container)
 {
     if (!nodeHandle_.getParam(parameter, container))
     {
-        ROS_ERROR("Could not get parameter: %s", parameter);
+        ROS_ERROR_STREAM("Could not get parameter: " <<  parameter);
     }
+    ROS_INFO_STREAM("Parameter loaded: " << parameter << " = " << container << std::endl);
 }
+*/
 
 // Function getParameter: int
+/*
 void HuskyHighlevelController::getParameter(std::string parameter, int container)
 {
     if (!nodeHandle_.getParam(parameter, container))
     {
-        //ROS_ERROR("Could not get parameter: %s", parameter);
-        ROS_ERROR("Could not get parameter: %s", parameter);
+        ROS_ERROR_STREAM("Could not get parameter: " <<  parameter);
     }
+    ROS_INFO_STREAM("Parameter loaded: " << parameter << " = " << container << std::endl);
 }
 */
 
