@@ -1,3 +1,7 @@
 laser:
     topic: /scan
     queue_size: 10
+
+controller:
+    topic: /cmd_vel
+    queue_size: 10

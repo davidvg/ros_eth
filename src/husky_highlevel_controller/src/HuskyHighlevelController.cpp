@@ -49,24 +49,36 @@ void HuskyHighlevelController::laserscanCallback(const sensor_msgs::LaserScan::C
 
 bool HuskyHighlevelController::init(void)
 {
-    // Get parameter: topic
-    std::string topic;
-    if (!nodeHandle_.getParam("laser/topic", topic)) 
+    // Get parameter: laser/topic
+    std::string laser_topic;
+    if (!nodeHandle_.getParam("laser/topic", laser_topic)) 
     {
-        ROS_ERROR("Could not get parameter: topic" );
+        ROS_ERROR_STREAM("Could not get parameter: " << laser_topic);
     }
-    // Get parameter: queue_size
-    int queue_size;
-    if (!nodeHandle_.getParam("laser/queue_size", queue_size)) 
+    // Get parameter: laser/queue_size
+    int laser_queue_size;
+    if (!nodeHandle_.getParam("laser/queue_size", laser_queue_size)) 
     {
-        ROS_ERROR("Could not get parameter: queue_size" );
+        ROS_ERROR_STREAM("Could not get parameter: " << laser_queue_size );
+    }
+    // Get parameter: controller/topic
+    std::string controller_topic;
+    if (!nodeHandle_.getParam("controller/topic", controller_topic)) 
+    {
+        ROS_ERROR_STREAM("Could not get parameter: " << controller_topic);
+    }
+    // Get parameter: controller/queue_size
+    int controller_queue_size;
+    if (!nodeHandle_.getParam("controller/queue_size", controller_queue_size)) 
+    {
+        ROS_ERROR_STREAM("Could not get parameter: " << controller_queue_size);
     }
     
     // Initialize subscriber
-    laserscan_sub = nodeHandle_.subscribe(topic, queue_size, &HuskyHighlevelController::laserscanCallback, this);
+    laserscan_sub = nodeHandle_.subscribe(laser_topic, laser_queue_size, &HuskyHighlevelController::laserscanCallback, this);
 
     // Initialize publisher
-    cmd_vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+    cmd_vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>(controller_topic, controller_queue_size);
 
     return true;
 }
