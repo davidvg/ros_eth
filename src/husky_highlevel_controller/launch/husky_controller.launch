@@ -1,8 +1,13 @@
 <?xml version="1.0"?>
 <launch>
 
+    <arg name="debug" default="false"/>
 
-
+    <!-- Launch husky_highlevel_controller node -->
+    <node pkg="husky_highlevel_controller" type="husky_highlevel_controller" name="husky_controller" output="screen">
+        <rosparam command="load" file="$(find husky_highlevel_controller)/config/config.yml"/>
+        <arg name="debug" value="$(arg debug)"/>
+    </node>
 
 
 </launch>

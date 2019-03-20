@@ -5,3 +5,5 @@ laser:
 controller:
     topic: /cmd_vel
     queue_size: 10
+    p_vel: 0.3
+    p_ang: 0.5

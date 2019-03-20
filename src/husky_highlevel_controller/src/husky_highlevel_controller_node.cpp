@@ -6,6 +6,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "husky_highlevel_controller");
 
     husky_highlevel_controller::HuskyHighlevelController controller;
+
     ros::Rate loop_rate(10);
 
     while (ros::ok())
