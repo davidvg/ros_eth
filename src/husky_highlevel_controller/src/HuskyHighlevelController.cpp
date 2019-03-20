@@ -11,9 +11,6 @@ HuskyHighlevelController::HuskyHighlevelController()
 {
     ROS_INFO("HuskyHighlevelController Init.");
     ROS_ASSERT(init());
-
-    // Initiate laser params to not obtained from laser messages
-    //laser_params.ready = false;
 }
 
 // Destructor
@@ -60,7 +57,6 @@ void HuskyHighlevelController::laserscanCallback(const sensor_msgs::LaserScan::C
     ROS_DEBUG("HuskyHighlevelController::laserscanCallback called.");
     // Store the message in the class
     laserResponse = *msg;
-    ROS_DEBUG("Message from laserscanCallback stored in HuskyHighlevelController::laserResponse");
     
     // Check if laser parameters have been obtained from messages
     // This way parameters are read only once.
@@ -93,37 +89,40 @@ void HuskyHighlevelController::updateCommandVelocity(double linear, double angul
     
     min_distance = min_val;
     min_distance_ix = min_val_ix;
-    ROS_DEBUG("Minimum laser measurement = %f (ix = %d)", min_distance, min_val_ix);
+    ROS_DEBUG("Minimum laser measurement = %.2f m (ray number %d)", min_distance, min_val_ix);
 
     // Generate control message
     geometry_msgs::Twist cmd_vel;
 
     // Linear velocity
     cmd_vel.linear.x = controller_p_vel * min_distance;
-    ROS_DEBUG("Computed linear velocity: %f", cmd_vel.linear.x);
+    ROS_DEBUG("Computed linear velocity: %.2f m/s", cmd_vel.linear.x);
     if (cmd_vel.linear.x > MAX_LINEAR)
     {
         cmd_vel.linear.x = MAX_LINEAR;
-        ROS_DEBUG("Linear velocity limited to %f", MAX_LINEAR);
+        ROS_DEBUG("Linear velocity limited to %.2f m/s", MAX_LINEAR);
     }
 
     // Angular velocity
     double angle = (min_distance_ix * laserResponse.angle_increment) + laserResponse.angle_min;
+    // Frames base_laser and base_link have opposite Y axes, so angles are
+    // measured with changed sign
     angle = -angle;
-    ROS_DEBUG("Computed direction: %f rad (%f deg)", angle, angle*180/3.1415);
+    ROS_DEBUG("Computed direction: %.2f rad (%.2f deg)", angle, angle*180/3.1415);
+    
     cmd_vel.angular.z = controller_p_ang * angle;
-    ROS_DEBUG("Computed angular velocity: %f", cmd_vel.angular.z);
+    ROS_DEBUG("Computed angular velocity: %.2f rad/s", cmd_vel.angular.z);
     if (cmd_vel.angular.z > MAX_ANGULAR)
     {
         cmd_vel.angular.z = MAX_ANGULAR;
-        ROS_DEBUG("Angular velocity limited to %f", MAX_ANGULAR);
+        ROS_DEBUG("Angular velocity limited to %.2f rad/s", MAX_ANGULAR);
     }
 
-    ROS_DEBUG("Publishing linear velocity:  [%f, %f, %f]",
+    ROS_DEBUG("Publishing linear velocity (m/s):    [%.2f, %.2f, %.2f]",
             cmd_vel.linear.x,
             cmd_vel.linear.y,
             cmd_vel.linear.z);
-    ROS_DEBUG("Publishing angular velocity: [%f, %f, %f]",
+    ROS_DEBUG("Publishing angular velocity (rad/s): [%.2f, %.2f, %.2f]",
             cmd_vel.angular.x,
             cmd_vel.angular.y,
             cmd_vel.angular.z);
