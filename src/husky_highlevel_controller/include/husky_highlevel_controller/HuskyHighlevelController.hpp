@@ -16,7 +16,6 @@ class HuskyHighlevelController
         virtual ~HuskyHighlevelController();
         
         // Function Prototypes
-        bool init(void);
         void controlLoop();
 
     private:
@@ -38,6 +37,7 @@ class HuskyHighlevelController
         ros::Publisher cmd_vel_pub;
        
         // Function Prototypes
+        bool init(void);
         std::string getParameterString(std::string);
         int getParameterInt(std::string);
         double getParameterDouble(std::string);
