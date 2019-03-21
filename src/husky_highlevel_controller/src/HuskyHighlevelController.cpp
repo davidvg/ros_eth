@@ -57,15 +57,6 @@ void HuskyHighlevelController::laserscanCallback(const sensor_msgs::LaserScan::C
     ROS_DEBUG("HuskyHighlevelController::laserscanCallback called.");
     // Store the message in the class
     laserResponse = *msg;
-    
-    // Check if laser parameters have been obtained from messages
-    // This way parameters are read only once.
-    // Should this be in other place?
-    if (!laser_params.ready) {
-        ROS_DEBUG("Obtaining laser parameters from laser message.");
-        getLaserParameters();
-        ROS_ASSERT_MSG(laser_params.ready, "Laser parameters not obtained.");
-    }
 }
 
 void HuskyHighlevelController::updateCommandVelocity(double linear, double angular)
@@ -128,26 +119,6 @@ void HuskyHighlevelController::updateCommandVelocity(double linear, double angul
             cmd_vel.angular.z);
     
     cmd_vel_pub.publish(cmd_vel);
-}
-
-void HuskyHighlevelController::getLaserParameters(void)
-{
-    ROS_DEBUG("HuskyHighlevelController::getLaserParameters called.");
-    laser_params.range_min = laserResponse.range_min;
-    ROS_INFO_STREAM("Read parameter from laser: range_min = " << laser_params.range_min);
-    laser_params.range_max = laserResponse.range_max;
-    ROS_INFO_STREAM("Read parameter from laser: range_max = " << laser_params.range_max);
-    laser_params.angle_min = laserResponse.angle_min;
-    ROS_INFO_STREAM("Read parameter from laser: angle_min = " << laser_params.angle_min);
-    laser_params.angle_max = laserResponse.angle_max;
-    ROS_INFO_STREAM("Read parameter from laser: angle_max = " << laser_params.angle_max);
-    laser_params.angle_increment = laserResponse.angle_increment;
-    ROS_INFO_STREAM("Read parameter from laser: angle_increment = " << laser_params.angle_increment);
-    // Compute number of elements
-    laser_params.num_measurements = laserResponse.ranges.size();
-    ROS_INFO_STREAM("Read parameter from laser: num_measurements = " << laser_params.num_measurements);
-    // Mark parameters as obtained and skip for the following loops
-    laser_params.ready = true;
 }
 
 void HuskyHighlevelController::controlLoop(void)

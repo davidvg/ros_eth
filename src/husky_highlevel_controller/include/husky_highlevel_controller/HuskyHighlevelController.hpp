@@ -27,16 +27,7 @@ class HuskyHighlevelController
         sensor_msgs::LaserScan laserResponse;  // Response from laserscanCallback
         double min_distance; 
         int min_distance_ix;
-        // Parameters from laser
-        struct laserParams {
-            bool ready{false};
-            double num_measurements{};
-            double range_min{};
-            double range_max{};
-            double angle_min{};
-            double angle_max{};
-            double angle_increment{};
-        } laser_params;
+        // Controller gains
         double controller_p_vel{};
         double controller_p_ang{};
 
