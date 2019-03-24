@@ -26,6 +26,7 @@ class HuskyHighlevelController
         sensor_msgs::LaserScan laserResponse;  // Response from laserscanCallback
         double min_distance; 
         int min_distance_ix;
+        double min_distance_angle;
         // Controller gains
         double controller_p_vel{};
         double controller_p_ang{};
@@ -35,6 +36,7 @@ class HuskyHighlevelController
         
         // Publishers
         ros::Publisher cmd_vel_pub;
+        ros::Publisher marker_pub;
        
         // Function Prototypes
         bool init(void);
@@ -44,6 +46,7 @@ class HuskyHighlevelController
         void laserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
         void getLaserParameters();
         void updateCommandVelocity(double, double);
+        void publishMarker();
 
 };
 

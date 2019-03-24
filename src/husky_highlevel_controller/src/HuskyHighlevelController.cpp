@@ -1,6 +1,8 @@
 #include "husky_highlevel_controller/HuskyHighlevelController.hpp"
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/Twist.h>
+#include <visualization_msgs/Marker.h>
+#include <math.h>
 
 
 namespace husky_highlevel_controller {
@@ -44,10 +46,15 @@ bool HuskyHighlevelController::init(void)
             &HuskyHighlevelController::laserscanCallback, 
             this);
 
-    // Initialize publisher
+    // Initialize cmd_vel publisher
     cmd_vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>(
             controller_topic, 
             controller_queue_size);
+
+    // Initialize marker publisher
+    marker_pub = nodeHandle_.advertise<visualization_msgs::Marker>(
+            "visualization_marker",
+            0);
 
     return true;
 }
@@ -95,13 +102,13 @@ void HuskyHighlevelController::updateCommandVelocity(double linear, double angul
     }
 
     // Angular velocity
-    double angle = (min_distance_ix * laserResponse.angle_increment) + laserResponse.angle_min;
+    min_distance_angle = (min_distance_ix * laserResponse.angle_increment) + laserResponse.angle_min;
     // Frames base_laser and base_link have opposite Y axes, so angles are
     // measured with changed sign
-    angle = -angle;
-    ROS_DEBUG("Computed direction: %.2f rad (%.2f deg)", angle, angle*180/3.1415);
+    min_distance_angle = -min_distance_angle;
+    ROS_DEBUG("Computed direction: %.2f rad (%.2f deg)", min_distance_angle, min_distance_angle*180/3.1415);
     
-    cmd_vel.angular.z = controller_p_ang * angle;
+    cmd_vel.angular.z = controller_p_ang * min_distance_angle;
     ROS_DEBUG("Computed angular velocity: %.2f rad/s", cmd_vel.angular.z);
     if (cmd_vel.angular.z > MAX_ANGULAR)
     {
@@ -121,10 +128,43 @@ void HuskyHighlevelController::updateCommandVelocity(double linear, double angul
     cmd_vel_pub.publish(cmd_vel);
 }
 
+// publishMarker uses the computed minimum distance and angle to the pillar
+// and publishes this position in the laser scan frame.
+// The publisher uses a marker message that can be used in rviz to show the
+// pillar's position
+void HuskyHighlevelController::publishMarker(void)
+{
+    double marker_x {0}, marker_y {0}, marker_z {0};
+    visualization_msgs::Marker marker;
+
+    // Angles have opposite sign in laser and odom frames
+    marker_x = min_distance * cos(-min_distance_angle);
+    marker_y = min_distance * sin(-min_distance_angle);
+
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.header.frame_id = "base_laser";
+    //ROS_INFO("Marker: topic = %s", marker.header.frame_id.c_str());
+    marker.pose.position.x = marker_x;
+    marker.pose.position.y = marker_y;
+    marker.pose.position.z = marker_z;
+    ROS_INFO("Marker: [x, y, z] = [%.2f, %.2f, %.2f]", marker_x, marker_y, marker_z);
+    marker.scale.x = 0.25;
+    marker.scale.y = 0.25;
+    marker.scale.z = 1;
+    ROS_INFO("Marker: scale = [%.2f, %.2f, %.2f]", marker.scale.x, marker.scale.y, marker.scale.z);
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    marker.color.a = 1.0;
+
+    marker_pub.publish(marker);
+}
+
 void HuskyHighlevelController::controlLoop(void)
 {
     ROS_DEBUG("HuskyHighlevelController::updateCommandVelocity called.");
     updateCommandVelocity(MAX_LINEAR, MAX_ANGULAR);
+    publishMarker();
 }
 
 // Function getParameter: string
