@@ -7,7 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     sensor_msgs
     geometry_msgs
-    geometry_msgs
+    visualization_msgs
+    tf
 )
 
 catkin_package(

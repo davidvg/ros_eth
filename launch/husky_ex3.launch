@@ -26,9 +26,7 @@
     <node pkg="rqt_logger_level" type="rqt_logger_level" name="rqt_logger_level"/>
     -->
 
-    <!-- rqt_console in debug mode -->
-    <!-- 
+    <!-- rqt_console -->
     <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
-    -->
 
 </launch>
