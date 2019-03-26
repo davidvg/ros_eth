@@ -27,6 +27,8 @@
     -->
 
     <!-- rqt_console -->
+    <!--
     <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/>
+    -->
 
 </launch>

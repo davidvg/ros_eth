@@ -150,8 +150,8 @@ void HuskyHighlevelController::updateMarker(void)
     visualization_msgs::Marker marker;
 
     // Y coordinates are inverted in the /base_laser and /base_link frames
-    measure_x_laser = min_distance * cos(min_distance_angle);
-    measure_y_laser = min_distance * sin(min_distance_angle);
+    measure_x_laser = min_distance * cos(-min_distance_angle);
+    measure_y_laser = min_distance * sin(-min_distance_angle);
 
     measure_x_link = measure_x_laser;
     measure_y_link = -measure_y_laser;
@@ -165,9 +165,9 @@ void HuskyHighlevelController::updateMarker(void)
     marker.type = visualization_msgs::Marker::CYLINDER;
     marker.header.frame_id = "base_laser";
     marker.header.stamp = ros::Time::now();
-    marker.pose.position.x = measure_x_link;
-    marker.pose.position.y = measure_y_link;
-    marker.pose.position.z = measure_z_link;
+    marker.pose.position.x = measure_x_laser;
+    marker.pose.position.y = measure_y_laser;
+    marker.pose.position.z = measure_z_laser;
     marker.scale.x = 0.1;
     marker.scale.y = marker.scale.x;
     marker.scale.z = 1;
