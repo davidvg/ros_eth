@@ -1,6 +1,7 @@
 #include "husky_highlevel_controller/HuskyHighlevelController.hpp"
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PointStamped.h>
 #include <visualization_msgs/Marker.h>
 #include <math.h>
 
@@ -50,10 +51,6 @@ bool HuskyHighlevelController::init(void)
     cmd_vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>(
             controller_topic, 
             controller_queue_size);
-
-    // Initialize transform listener
-    //tf::TransformListener tf_listener(const &nodeHandle_);
-    //tf::TransformListener tf_listener;
 
     // Initialize marker publisher
     marker_pub = nodeHandle_.advertise<visualization_msgs::Marker>(
@@ -179,11 +176,98 @@ void HuskyHighlevelController::updateMarker(void)
     marker_pub.publish(marker);
 }
 
+void HuskyHighlevelController::updateMarkerTF(void)
+{
+    /*
+    Uses the computed minimum distance and angle to the pillar and transforms
+    it to the /odom frame using transforms. This computed point is used to 
+    define a visualization_msgs::Marker object, that is published in the
+    /odom frame.
+    */
+
+    // Distance to target in the /base_laser frame
+    double measure_x_laser {0}, measure_y_laser {0}, measure_z_laser {0};
+
+    // Y coordinates are inverted in the /base_laser and /base_link frames
+    measure_x_laser = min_distance * cos(-min_distance_angle);
+    measure_y_laser = min_distance * sin(-min_distance_angle);
+
+    tf::StampedTransform transform;
+
+    // Define points in base_laser and odom frames
+    geometry_msgs::PointStamped laser_point;
+    // The converted point, odom_point, is defined in the header file to
+    // make it a class member, thus keeping previous values in case the 
+    // transform is not found. This avoids the marker showing in the position
+    // [0, 0, 0] in the /odom frame, as a result of a default definition of the
+    // marker.
+     
+    //geometry_msgs::PointStamped odom_point;
+
+    try
+    {
+        tfListener.waitForTransform("/odom", "/base_laser", ros::Time(0), ros::Duration(0.1));
+        tfListener.lookupTransform("/odom", "/base_laser", ros::Time(0), transform);
+        //ROS_INFO("canTransform: TRUE");
+        ROS_DEBUG("Transform base_laser -> odom: [%.2f, %.2f, %.2f]",
+                 transform.getOrigin().x(),
+                 transform.getOrigin().y(),
+                 transform.getOrigin().z());
+
+        // Populate point in base_laser frame
+        laser_point.header.frame_id = "base_laser";
+        laser_point.header.stamp = ros::Time();
+        laser_point.point.x = measure_x_laser;
+        laser_point.point.y = measure_y_laser;
+        laser_point.point.z = 0.0;
+
+        // Get transformed point
+        tfListener.transformPoint("odom", laser_point, odom_point);
+
+        ROS_DEBUG("base_laser: [%.2f, %.2f, %.2f]",
+                 laser_point.point.x,
+                 laser_point.point.y,
+                 laser_point.point.z);
+
+        ROS_DEBUG("odom      : [%.2f, %.2f, %.2f]",
+                odom_point.point.x,
+                odom_point.point.y,
+                odom_point.point.z);
+
+    }
+    catch (tf2::TransformException &ex)
+    {
+        ROS_WARN("%s", ex.what());
+        ros::Duration(1);
+    }
+
+    // Define marker object
+    visualization_msgs::Marker marker;
+    
+    // Populate marker 
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.header.frame_id = "odom";
+    marker.header.stamp = ros::Time::now();
+    marker.pose.position.x = odom_point.point.x;
+    marker.pose.position.y = odom_point.point.y;
+    marker.pose.position.z = odom_point.point.z;
+    marker.scale.x = 0.1;
+    marker.scale.y = marker.scale.x;
+    marker.scale.z = 1;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    marker.color.a = 1.0;
+
+    marker_pub.publish(marker);
+}
+
 void HuskyHighlevelController::controlLoop(void)
 {
     ROS_DEBUG("HuskyHighlevelController::controlLoop called.");
     updateCommandVelocity(MAX_LINEAR, MAX_ANGULAR);
-    updateMarker();
+    //updateMarker();
+    updateMarkerTF();
 }
 
 // Function getParameter: string

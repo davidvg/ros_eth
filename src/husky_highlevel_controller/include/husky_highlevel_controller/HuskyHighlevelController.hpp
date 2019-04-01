@@ -2,6 +2,8 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <tf/transform_listener.h>
+#include <geometry_msgs/PointStamped.h>
 
 #define MAX_LINEAR 2.0
 #define MAX_ACCEL 1.0
@@ -31,6 +33,8 @@ class HuskyHighlevelController
         // Controller gains
         double controller_p_vel{};
         double controller_p_ang{};
+        // Transformed laserscan point
+        geometry_msgs::PointStamped odom_point;
 
         // Subscribers
         ros::Subscriber laserscan_sub;
@@ -38,6 +42,9 @@ class HuskyHighlevelController
         // Publishers
         ros::Publisher cmd_vel_pub;
         ros::Publisher marker_pub;
+
+        // Transform listeners
+        tf::TransformListener tfListener;
 
         // Function Prototypes
         bool init(void);
@@ -48,6 +55,7 @@ class HuskyHighlevelController
         void getLaserParameters();
         void updateCommandVelocity(double, double);
         void updateMarker();
+        void updateMarkerTF();
 
 };
 
