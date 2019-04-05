@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="laser_enabled" default="$(optenv HUSKY_LSM1XX_ENABLED false)"/>
+    <arg name="kinect_enabled" default="$(optenv HUSKY_KINECT_ENABLED false)"/>
+    <arg name="urdf_extras" default="$(optenv HUSKY_URDF_EXTRAS)"/>
+
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf">
+        <rosparam command="load" file="$(find husky_control)/config/localization.yaml"/>
+    </node>
+
+    <node pkg="rqt_multiplot" type="rqt_multiplot" name="rqt_multiplot"/>
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+    <include file="$(find husky_description)/launch/description.launch">
+        <arg name="laser_enabled" value="$(arg laser_enabled)"/>
+        <arg name="kinect_enabled" value="$(arg kinect_enabled)"/>
+        <arg name="urdf_extras" value="$(arg urdf_extras)"/>
+    </include>
+
+    <node pkg="rviz" type="rviz" name="rviz"/>
+
+</launch>
