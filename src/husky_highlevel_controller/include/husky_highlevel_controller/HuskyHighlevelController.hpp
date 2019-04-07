@@ -4,6 +4,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/PointStamped.h>
+#include <std_srvs/SetBool.h>
 
 #define MAX_LINEAR 2.0
 #define MAX_ACCEL 1.0
@@ -21,6 +22,8 @@ class HuskyHighlevelController
         // Function Prototypes
         void controlLoop();
 
+        ros::NodeHandle nh;
+
     private:
         // NodeHandles
         ros::NodeHandle nodeHandle_;
@@ -35,6 +38,7 @@ class HuskyHighlevelController
         double controller_p_ang{};
         // Transformed laserscan point
         geometry_msgs::PointStamped odom_point;
+        bool robot_run = false;
 
         // Subscribers
         ros::Subscriber laserscan_sub;
@@ -46,12 +50,22 @@ class HuskyHighlevelController
         // Transform listeners
         tf::TransformListener tfListener;
 
+        // Service servers
+        ros::ServiceServer start_robot_server;
+
+        // Service Clients
+        ros::ServiceClient start_robot_client;
+
+        // Callbacks
+        void laserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
+        bool startrobotCallback(std_srvs::SetBool::Request&,
+                           std_srvs::SetBool::Response&);
+
         // Function Prototypes
         bool init(void);
         std::string getParameterString(std::string);
         int getParameterInt(std::string);
         double getParameterDouble(std::string);
-        void laserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
         void getLaserParameters();
         void updateCommandVelocity(double, double);
         void updateMarker();

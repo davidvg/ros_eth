@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     sensor_msgs
     geometry_msgs
+    std_srvs
     visualization_msgs
     tf
 )
@@ -30,4 +31,12 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
+)
+
+add_executable(start_robot_node
+src/start_robot_node.cpp
+)
+
+target_link_libraries(start_robot_node
+${catkin_LIBRARIES}
 )

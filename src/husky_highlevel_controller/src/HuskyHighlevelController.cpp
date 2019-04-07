@@ -38,7 +38,6 @@ bool HuskyHighlevelController::init(void)
     controller_p_vel = getParameterDouble("controller/p_vel");
     // Get parameter: controller/p_ang
     controller_p_ang = getParameterDouble("controller/p_ang");
-
     
     // Initialize subscriber
     laserscan_sub = nodeHandle_.subscribe(
@@ -57,6 +56,16 @@ bool HuskyHighlevelController::init(void)
             "visualization_marker",
             0);
 
+    // start_robot_server
+    start_robot_server = nodeHandle_.advertiseService(
+            "/husky_highlevel_controller/start_robot",
+            &HuskyHighlevelController::startrobotCallback,
+            this);
+    
+    // start_robot client
+    start_robot_client = nodeHandle_.serviceClient<std_srvs::SetBool>("start_robot");
+
+    // Exit HuskyHighlevelController::init()
     return true;
 }
 
@@ -67,6 +76,25 @@ void HuskyHighlevelController::laserscanCallback(const sensor_msgs::LaserScan::C
     laserResponse = *msg;
 }
 
+bool HuskyHighlevelController::startrobotCallback(std_srvs::SetBool::Request &req,
+                                             std_srvs::SetBool::Response &res)
+{
+    // Update the swith value
+    robot_run = req.data;
+
+    res.success = (robot_run == req.data);
+    res.message = "start_robot set.";
+
+    return true;
+}
+
+/*
+To-Do:
+Allow to pass (0, 0) to updateCommandVelocity to ensure correct stop when
+stopped using service.
+
+The function takes two arguments (linear, angular) that currently do NOTHING.
+*/
 void HuskyHighlevelController::updateCommandVelocity(double linear, double angular)
 {
     ROS_DEBUG("HuskyHighlevelController::updateCommandVelocity called.");
@@ -264,10 +292,19 @@ void HuskyHighlevelController::updateMarkerTF(void)
 
 void HuskyHighlevelController::controlLoop(void)
 {
-    ROS_DEBUG("HuskyHighlevelController::controlLoop called.");
-    updateCommandVelocity(MAX_LINEAR, MAX_ANGULAR);
-    //updateMarker();
-    updateMarkerTF();
+    // Run the loop only if the robot has been started via start_robot service
+    if (robot_run)
+    {
+        ROS_DEBUG("HuskyHighlevelController::controlLoop called.");
+        updateCommandVelocity(MAX_LINEAR, MAX_ANGULAR);
+        //updateMarker();
+        updateMarkerTF();
+    }
+    else
+    {
+        // Uncomment when updateCommandVelocity is corrected.
+        //updateCommandVelocity(0.0, 0.0);
+    }
 }
 
 // Function getParameter: string
