@@ -7,8 +7,14 @@
 #include <std_srvs/SetBool.h>
 
 #define MAX_LINEAR 2.0
-#define MAX_ACCEL 1.0
 #define MAX_ANGULAR 1.0
+#define MAX_ACCEL 1.0
+
+/*
+To-Do
+-----
+- Implement acceleration ramp
+*/
 
 namespace husky_highlevel_controller {
 
@@ -38,7 +44,8 @@ class HuskyHighlevelController
         double controller_p_ang{};
         // Transformed laserscan point
         geometry_msgs::PointStamped odom_point;
-        bool robot_run = false;
+        // Switch variable for starting/stopping the robot
+        bool robot_run = true;
 
         // Subscribers
         ros::Subscriber laserscan_sub;
@@ -59,7 +66,7 @@ class HuskyHighlevelController
         // Callbacks
         void laserscanCallback(const sensor_msgs::LaserScan::ConstPtr&);
         bool startrobotCallback(std_srvs::SetBool::Request&,
-                           std_srvs::SetBool::Response&);
+                                std_srvs::SetBool::Response&);
 
         // Function Prototypes
         bool init(void);
@@ -67,11 +74,12 @@ class HuskyHighlevelController
         int getParameterInt(std::string);
         double getParameterDouble(std::string);
         void getLaserParameters();
-        void updateCommandVelocity(double, double);
+        void computeMinDistance(void);
+        void updateCommandVelocity(double linear=MAX_LINEAR,
+                                   double angular=MAX_ANGULAR);
         void updateMarker();
         void updateMarkerTF();
 
 };
-
 
 } // Namespace: husky_highlevel_controller

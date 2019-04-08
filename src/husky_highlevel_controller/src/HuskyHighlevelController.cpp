@@ -79,27 +79,26 @@ void HuskyHighlevelController::laserscanCallback(const sensor_msgs::LaserScan::C
 bool HuskyHighlevelController::startrobotCallback(std_srvs::SetBool::Request &req,
                                              std_srvs::SetBool::Response &res)
 {
-    // Update the swith value
-    robot_run = req.data;
-
+    robot_run = req.data;   // Update the swith value
     res.success = (robot_run == req.data);
-    res.message = "start_robot set.";
+
+    std::string status;
+    if (robot_run)
+    {
+        status = "Robot state set to ON";
+    }
+    else
+    {
+        status = "Robot state set to OFF";
+    }
+
+    res.message = status;
 
     return true;
 }
 
-/*
-To-Do:
-Allow to pass (0, 0) to updateCommandVelocity to ensure correct stop when
-stopped using service.
-
-The function takes two arguments (linear, angular) that currently do NOTHING.
-*/
-void HuskyHighlevelController::updateCommandVelocity(double linear, double angular)
+void HuskyHighlevelController::computeMinDistance()
 {
-    ROS_DEBUG("HuskyHighlevelController::updateCommandVelocity called.");
-
-    // Compute linear and angular velocity from laser measurement
     double min_val = laserResponse.range_max;
     int min_val_ix = 0;
     size_t num_elems = laserResponse.ranges.size();
@@ -117,42 +116,65 @@ void HuskyHighlevelController::updateCommandVelocity(double linear, double angul
     min_distance = min_val;
     min_distance_ix = min_val_ix;
     ROS_DEBUG("Minimum laser measurement = %.2f m (ray number %d)", min_distance, min_val_ix);
+}
+
+/*
+To-Do:
+Allow to pass (0, 0) to updateCommandVelocity to ensure correct stop when
+stopped using service.
+
+The function takes two arguments (linear, angular) that currently do NOTHING.
+*/
+void HuskyHighlevelController::updateCommandVelocity(double linear, double angular)
+{
+    ROS_DEBUG("HuskyHighlevelController::updateCommandVelocity called.");
 
     // Generate control message
     geometry_msgs::Twist cmd_vel;
 
-    // Linear velocity
-    cmd_vel.linear.x = controller_p_vel * min_distance;
-    ROS_DEBUG("Computed linear velocity: %.2f m/s", cmd_vel.linear.x);
-    if (cmd_vel.linear.x > MAX_LINEAR)
+    if ((linear != 0.0) || (angular != 0.0))
     {
-        cmd_vel.linear.x = MAX_LINEAR;
-        ROS_DEBUG("Linear velocity limited to %.2f m/s", MAX_LINEAR);
-    }
+        // Compute minimum distance and angle from laser scan
+        computeMinDistance();
 
-    // Angular velocity
-    min_distance_angle = (min_distance_ix * laserResponse.angle_increment) + laserResponse.angle_min;
-    // Frames base_laser and base_link have opposite Y axes, so angles are
-    // measured with changed sign
-    min_distance_angle = -min_distance_angle;
-    ROS_DEBUG("Computed direction: %.2f rad (%.2f deg)", min_distance_angle, min_distance_angle*180/3.141592654);
-    
-    cmd_vel.angular.z = controller_p_ang * min_distance_angle;
-    ROS_DEBUG("Computed angular velocity: %.2f rad/s", cmd_vel.angular.z);
-    if (cmd_vel.angular.z > MAX_ANGULAR)
-    {
-        cmd_vel.angular.z = MAX_ANGULAR;
-        ROS_DEBUG("Angular velocity limited to %.2f rad/s", MAX_ANGULAR);
-    }
+        // Linear velocity
+        cmd_vel.linear.x = controller_p_vel * min_distance;
+        ROS_DEBUG("Computed linear velocity: %.2f m/s", cmd_vel.linear.x);
+        if (cmd_vel.linear.x > linear)
+        {
+            cmd_vel.linear.x = linear;
+            ROS_DEBUG("Linear velocity limited to %.2f m/s", linear);
+        }
 
-    ROS_DEBUG("Publishing linear velocity (m/s): [%.2f, %.2f, %.2f]",
-            cmd_vel.linear.x,
-            cmd_vel.linear.y,
-            cmd_vel.linear.z);
-    ROS_DEBUG("Publishing angular velocity (rad/s): [%.2f, %.2f, %.2f]",
-            cmd_vel.angular.x,
-            cmd_vel.angular.y,
-            cmd_vel.angular.z);
+        // Angular velocity
+        min_distance_angle = (min_distance_ix * laserResponse.angle_increment) + laserResponse.angle_min;
+
+        // Frames base_laser and base_link have opposite Y axes, so angles are
+        // measured with changed sign
+        // This should be defined in a new variable.
+        min_distance_angle = -min_distance_angle;
+        ROS_DEBUG("Computed direction: %.2f rad (%.2f deg)",
+                min_distance_angle, min_distance_angle*180/3.141592654);
+        
+        cmd_vel.angular.z = controller_p_ang * min_distance_angle;
+        ROS_DEBUG("Computed angular velocity: %.2f rad/s", cmd_vel.angular.z);
+
+        if (cmd_vel.angular.z > angular)
+        {
+            cmd_vel.angular.z = angular;
+            ROS_DEBUG("Angular velocity limited to %.2f rad/s", angular);
+        }
+
+        ROS_DEBUG("Publishing linear velocity (m/s): [%.2f, %.2f, %.2f]",
+                cmd_vel.linear.x,
+                cmd_vel.linear.y,
+                cmd_vel.linear.z);
+
+        ROS_DEBUG("Publishing angular velocity (rad/s): [%.2f, %.2f, %.2f]",
+                cmd_vel.angular.x,
+                cmd_vel.angular.y,
+                cmd_vel.angular.z);
+    }
     
     cmd_vel_pub.publish(cmd_vel);
 }
@@ -164,6 +186,7 @@ void HuskyHighlevelController::updateMarker(void)
     and publishes this position in the laser scan frame.
     The publisher uses a marker message that can be used in rviz to show the
     pillar's position
+    The conversion to the /odom (world) frame is done automatically in RViz.
     */
     // Distance to target in the /base_laser frame
     double measure_x_laser {0}, measure_y_laser {0}, measure_z_laser {0};
@@ -223,14 +246,12 @@ void HuskyHighlevelController::updateMarkerTF(void)
     tf::StampedTransform transform;
 
     // Define points in base_laser and odom frames
-    geometry_msgs::PointStamped laser_point;
     // The converted point, odom_point, is defined in the header file to
     // make it a class member, thus keeping previous values in case the 
     // transform is not found. This avoids the marker showing in the position
     // [0, 0, 0] in the /odom frame, as a result of a default definition of the
     // marker.
-     
-    //geometry_msgs::PointStamped odom_point;
+    geometry_msgs::PointStamped laser_point;
 
     try
     {
@@ -297,13 +318,12 @@ void HuskyHighlevelController::controlLoop(void)
     {
         ROS_DEBUG("HuskyHighlevelController::controlLoop called.");
         updateCommandVelocity(MAX_LINEAR, MAX_ANGULAR);
-        //updateMarker();
-        updateMarkerTF();
+        //updateMarker();  // Compute marker global position in RViz
+        updateMarkerTF();  // Compute marker global position using transform.
     }
     else
     {
-        // Uncomment when updateCommandVelocity is corrected.
-        //updateCommandVelocity(0.0, 0.0);
+        updateCommandVelocity(0.0, 0.0);
     }
 }
 
